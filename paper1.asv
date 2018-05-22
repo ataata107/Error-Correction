@@ -60,6 +60,11 @@ theta_dis = shuff_iris(1,8129:11360);
 %Password Entry              
 password = 'qwertyuiop';
 
+
+
+
+
+
 %User verification (Shuffling)
 iris_second = iris(1,:);
 iris_second=reshape(iris_second,160,64,[]);
