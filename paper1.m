@@ -12,7 +12,7 @@ m = 7;           % Number of bits per symbol
 ns = 2^m-1;     % Codeword length 
 ks = 3;           % Message length
 K = randi([0 1], ks,m);
-msg = gf(K.',m)
+msg = gf(K',m)
 
 code = rsenc(msg,ns,ks);
 code = code';
@@ -60,6 +60,11 @@ theta_dis = shuff_iris(1,8129:11360);
 %Password Entry              
 password = 'qwertyuiop';
 
+
+
+
+
+
 %User verification (Shuffling)
 iris_second = iris(1,:);
 iris_second=reshape(iris_second,160,64,[]);
@@ -99,10 +104,20 @@ decoded_Hadamard = w_prime*(HC_k1(1:size(code,1),:))';
 counter = 1;
 decoded = zeros(127,64);
 decoded_code = zeros(127,m);
+code = gf2dec(code,m,137);
+code = reshape(code,127,7,[]);
 for i=I'
     decoded(counter,:) = pseudo_iris_copy(i,:);
+    
+    decoded_code(counter,:) = code(i,:);
     counter = counter+1;
-    %decoded_code(counter,:) = code(i,:);
 end
 %reed solomon decoding
-decoded_rs = rsdec(code',ns,ks)
+msg_new = gf(decoded_code,m);
+decoded_rs = rsdec(msg_new',ns,ks)
+decoded_rs = gf2dec(decoded_rs',m,137);
+decoded_rs = reshape(decoded_rs,3,7,[])
+if ( K == decoded_rs)
+    disp('Its a match')
+end
+
