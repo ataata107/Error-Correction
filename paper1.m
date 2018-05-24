@@ -6,7 +6,7 @@ clear all;
 load('file1.mat')
 iris = arrB;
 iris_first = iris(1,:);
-iris_first=reshape(iris_first,160,64,[]);
+iris_first=reshape(iris_first,160,64,[]);       %Manually input the blocks that you want to divide the iris code
 
 %Reed Solomon Encoding
 m = 7;           % Number of bits per symbol
@@ -50,20 +50,20 @@ end
 shuff_iris_copy = shuff_iris;
 counter = 0;
 zero_inserted = 7;
-for i=1:64+zero_inserted
-          if(rem(i,10) ==0)
-              shuff_iris(:,i)=zeros(160,1);
+for i=1:size(shuff_iris_copy,2)+zero_inserted
+          if(rem(i,10) ==0)                      %Manually decide this to make this equal to the zero inserted
+              shuff_iris(:,i)=zeros(size(iris_first,1),1);
               counter = counter+1;
           else
               shuff_iris(:,i) =shuff_iris_copy(:,i-counter);
           end
 end
 %theta lock and dis formation
-shuff_iris=reshape(shuff_iris,1,11360,[]);
-pseudo_iris=reshape(pseudo_iris,1,8128,[]); 
-shuff_iris_main = shuff_iris(1,1:8128);
+shuff_iris=reshape(shuff_iris,1,size(shuff_iris,1)*size(shuff_iris,2),[]);
+pseudo_iris=reshape(pseudo_iris,1,size(pseudo_iris,1)*size(pseudo_iris,2),[]); 
+shuff_iris_main = shuff_iris(1,1:size(pseudo_iris,2));
 theta_lock = xor(pseudo_iris,shuff_iris_main);
-theta_dis = shuff_iris(1,8129:11360);
+theta_dis = shuff_iris(1,size(pseudo_iris,2)+1:size(shuff_iris,2));
 %Password Entry              
 password = 'qwertyuiop';
 
