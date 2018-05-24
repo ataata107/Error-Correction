@@ -1,42 +1,49 @@
-%enrollment
+%-------------------------------------------------Enrollment---------------------------------------------------------------------------------------------------------------------------------
 
-
+%Load the iris code
 clc
 clear all;
 load('file1.mat')
 iris = arrB;
 iris_first = iris(1,:);
 iris_first=reshape(iris_first,160,64,[]);
-%Reed Solomon
+
+%Reed Solomon Encoding
 m = 7;           % Number of bits per symbol
 ns = 2^m-1;     % Codeword length 
 ks = 3;           % Message length
-K = randi([0 1], ks,m);
-msg = gf(K',m)
+K = randi([0 1], ks,m);  %Random Key
+msg = gf(K',m);     %Message in galois field remember it is a transpose of the original key.
 
-code = rsenc(msg,ns,ks);
-code = code';
+code = rsenc(msg,ns,ks); %encoding RS to make it ns blocks instead of k blocks of m bits each
+code = code';  %Take the transpose for above comment to be true
 
 %Hadamard
-k = m-1;
+k = m-1;    %Number of bits per hadamard encoded code
 H = hadamard(2^k);
 H = mod(-H+2*ones(2^k),3);
 minus_H= mod(hadamard(2^k)+2*ones(2^k),3);
-HC_k = [H;minus_H];
-pseudo_iris = HC_k(1:size(code,1),:);
+HC_k = [H;minus_H];  %to know the codeword take the corresponding row
+pseudo_iris = HC_k(1:size(code,1),:);  %Codeword
 pseudo_iris_copy = pseudo_iris;
-HC_k1 = [hadamard(2^k);-hadamard(2^k)];
+HC_k1 = [hadamard(2^k);-hadamard(2^k)]; %The main HC(k) as described in second paper
+
+
 %shuffled iris code
-shuff_iris=zeros(160,64);
-shuff_key = randi([0 1], 160,1);
-counter=0;
-for i=1:160
+shuff_iris=zeros(size(iris_first,1),size(iris_first,2));
+shuff_key = randi([0 1], size(iris_first,1),1);
+counter1=1;
+counter2=0;
+for i=1:size(iris_first,1)
           if (shuff_key(i)==1)
-                shuff_iris(i-counter,:)=iris_first(i,:);
+                shuff_iris(counter1,:)= iris_first(i,:);
+                counter1 = counter1 + 1;
           else
               
-              shuff_iris(161-i+counter,:)=iris_first(i,:);
-              counter = counter + 1;  
+               
+              shuff_iris(size(iris_first,1)-counter2,:)=iris_first(i,:);
+              counter2 = counter2 + 1;
+               
           end
 end
 %zero insertion
@@ -63,20 +70,23 @@ password = 'qwertyuiop';
 
 
 
+%User
+%Verification----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-%User verification (Shuffling)
-iris_second = iris(1,:);
+% (Shuffling)
+iris_second = iris(7,:);
 iris_second=reshape(iris_second,160,64,[]);
-shuff_iris_second=zeros(160,64);
-counter=0;
-for i=1:160
+shuff_iris_second=zeros(size(iris_second,1),size(iris_second,2));
+counter1=1;
+counter2=0;
+for i=1:size(iris_second,1)
           if (shuff_key(i)==1)
-                shuff_iris_second(i-counter,:)=iris_second(i,:);
+                shuff_iris_second(counter1,:)=iris_second(i,:);
+                counter1 = counter1 + 1;
           else
               
-              shuff_iris_second(161-i+counter,:)=iris_second(i,:);
-              counter = counter + 1;  
+              shuff_iris_second(size(iris_second,1)-counter2,:)=iris_second(i,:);
+              counter2 = counter2 + 1;  
           end
 end
 %zero insertion
@@ -114,10 +124,9 @@ for i=I'
 end
 %reed solomon decoding
 msg_new = gf(decoded_code,m);
-decoded_rs = rsdec(msg_new',ns,ks)
+decoded_rs = rsdec(msg_new',ns,ks);
 decoded_rs = gf2dec(decoded_rs',m,137);
-decoded_rs = reshape(decoded_rs,3,7,[])
+decoded_rs = reshape(decoded_rs,3,7,[]);
 if ( K == decoded_rs)
-    disp('Its a match')
+    disp('Its a match');
 end
-
