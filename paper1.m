@@ -110,7 +110,8 @@ theta_ps=reshape(theta_ps,2^m-1,2^k,[]);
 %Hadamard Decoding
 w_prime = 2*theta_ps - ones(2^m-1,2^k);
 decoded_Hadamard = w_prime*(HC_k1(1:size(code,1),:))';
-[Y,I] = max(decoded_Hadamard,[],2);
+[Y,I] = max(decoded_Hadamard,[],2); %we will take the first indice if more than two maximum. There will be error which will be further improved by rs
+%[Y2,I2] = sort(decoded_Hadamard,2,'descend');
 counter = 1;
 decoded = zeros(2^m-1,2^k);
 decoded_code = zeros(127,m);
@@ -129,4 +130,6 @@ decoded_rs = gf2dec(decoded_rs',m,137);
 decoded_rs = reshape(decoded_rs,ks,m,[]);
 if ( K == decoded_rs)
     disp('Its a match');
+else
+    disp('Intruder');
 end
