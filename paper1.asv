@@ -5,7 +5,7 @@ clc
 clear all;
 load('file1.mat')
 iris = arrB;
-iris_first = iris(1,:);
+iris_first = iris(1,:);                                %Manually Input the one you want to enroll
 iris_first=reshape(iris_first,160,64,[]);       %Manually input the blocks that you want to divide the iris code
 
 %Reed Solomon Encoding
@@ -17,7 +17,6 @@ msg = gf(K',m);     %Message in galois field remember it is a transpose of the o
 
 code = rsenc(msg,ns,ks); %encoding RS to make it ns blocks instead of k blocks of m bits each
 code = code';  %Take the transpose for above comment to be true
-
 %Hadamard
 k = m-1;    %Number of bits per hadamard encoded code
 H = hadamard(2^k);
@@ -63,7 +62,7 @@ shuff_iris=reshape(shuff_iris,1,size(shuff_iris,1)*size(shuff_iris,2),[]);
 pseudo_iris=reshape(pseudo_iris,1,size(pseudo_iris,1)*size(pseudo_iris,2),[]); 
 shuff_iris_main = shuff_iris(1,1:size(pseudo_iris,2));
 theta_lock = xor(pseudo_iris,shuff_iris_main);
-theta_dis = shuff_iris(1,8129:11360);
+theta_dis = shuff_iris(1,size(pseudo_iris,2)+1:size(shuff_iris,2));
 %Password Entry              
 password = 'qwertyuiop';
 
@@ -74,8 +73,9 @@ password = 'qwertyuiop';
 %Verification----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 % (Shuffling)
-iris_second = iris(7,:);
-iris_second=reshape(iris_second,160,64,[]);
+%randi([0 1], 160,64)       --Use this for an intruder
+iris_second = iris(2,:);                             %Manually input the one you want to verify
+iris_second=reshape(iris_second,160,64,[]);  %Manually input the size
 shuff_iris_second=zeros(size(iris_second,1),size(iris_second,2));
 counter1=1;
 counter2=0;
@@ -93,29 +93,29 @@ end
 shuff_iris_copy_second = shuff_iris_second;
 counter = 0;
 zero_inserted = 7;
-for i=1:64+zero_inserted
+for i=1:size(shuff_iris_copy_second,2)+zero_inserted
           if(rem(i,10) ==0)
-              shuff_iris_second(:,i)=zeros(160,1);
+              shuff_iris_second(:,i)=zeros(size(iris_second,1),1);
               counter = counter+1;
           else
               shuff_iris_second(:,i) =shuff_iris_copy_second(:,i-counter);
           end
 end
-shuff_iris_second=reshape(shuff_iris_second,1,11360,[]);
-shuff_iris_main_second = shuff_iris_second(1,1:8128);
+shuff_iris_second=reshape(shuff_iris_second,1,size(shuff_iris_second,1)*size(shuff_iris_second,2),[]);
+shuff_iris_main_second = shuff_iris_second(1,1:size(pseudo_iris,1)*size(pseudo_iris,2));
 theta_test_main = shuff_iris_main_second;
 
 theta_ps = xor(theta_lock,theta_test_main);
-theta_ps=reshape(theta_ps,127,64,[]);
+theta_ps=reshape(theta_ps,2^m-1,2^k,[]);
 %Hadamard Decoding
-w_prime = 2*theta_ps - ones(127,64);
+w_prime = 2*theta_ps - ones(2^m-1,2^k);
 decoded_Hadamard = w_prime*(HC_k1(1:size(code,1),:))';
 [Y,I] = max(decoded_Hadamard,[],2);
 counter = 1;
-decoded = zeros(127,64);
+decoded = zeros(2^m-1,2^k);
 decoded_code = zeros(127,m);
 code = gf2dec(code,m,137);
-code = reshape(code,127,7,[]);
+code = reshape(code,2^m-1,m,[]);
 for i=I'
     decoded(counter,:) = pseudo_iris_copy(i,:);
     
